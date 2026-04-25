@@ -20,7 +20,11 @@ interface DailyStats {
   burned: number
 }
 
-export function ProgressTracker() {
+interface ProgressTrackerProps {
+  onUpdate?: () => void
+}
+
+export function ProgressTracker({ onUpdate }: ProgressTrackerProps) {
   const [weightEntries, setWeightEntries] = useState<WeightEntry[]>([])
   const [newWeight, setNewWeight] = useState("")
   const [goalWeight, setGoalWeight] = useState(70)
@@ -43,11 +47,13 @@ export function ProgressTracker() {
     setWeightEntries(updated)
     localStorage.setItem("weightEntries", JSON.stringify(updated))
     setNewWeight("")
+    onUpdate?.()
   }
 
   const updateGoalWeight = (goal: number) => {
     setGoalWeight(goal)
     localStorage.setItem("goalWeight", goal.toString())
+    onUpdate?.()
   }
 
   const getWeeklyStats = (): DailyStats[] => {

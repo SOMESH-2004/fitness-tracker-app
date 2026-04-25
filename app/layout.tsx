@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { AIProvider } from "@/context/ai-context"
 import "./globals.css"
 
 const _inter = Inter({ subsets: ["latin"] })
@@ -24,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {children}
+        <AIProvider>
+          {children}
+        </AIProvider>
         <Analytics />
       </body>
     </html>

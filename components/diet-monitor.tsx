@@ -27,7 +27,11 @@ const mealTypes = [
   { value: "snack", label: "Snack", icon: Cookie },
 ]
 
-export function DietMonitor() {
+interface DietMonitorProps {
+  onUpdate?: () => void
+}
+
+export function DietMonitor({ onUpdate }: DietMonitorProps) {
   const [meals, setMeals] = useState<DayMeals>({})
   const [newMeal, setNewMeal] = useState({ name: "", calories: "", type: "breakfast" })
   const [dailyGoal, setDailyGoal] = useState(2000)
@@ -44,6 +48,7 @@ export function DietMonitor() {
   const saveMeals = (data: DayMeals) => {
     setMeals(data)
     localStorage.setItem("meals", JSON.stringify(data))
+    onUpdate?.()
   }
 
   const addMeal = () => {
@@ -72,6 +77,7 @@ export function DietMonitor() {
   const updateGoal = (goal: number) => {
     setDailyGoal(goal)
     localStorage.setItem("dailyCalorieGoal", goal.toString())
+    onUpdate?.()
   }
 
   const getTodayCalories = () => {
