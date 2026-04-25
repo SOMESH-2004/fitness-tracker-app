@@ -7,10 +7,9 @@ import { WorkoutTracker } from "@/components/workout-tracker"
 import { DietMonitor } from "@/components/diet-monitor"
 import { ProgressTracker } from "@/components/progress-tracker"
 import { TodoManager } from "@/components/todo-manager"
-import { AIChat } from "@/components/ai-chat"
 import { AISidebar } from "@/components/ai-sidebar"
 import { useUserStats } from "@/hooks/use-user-stats"
-import { Flame, Dumbbell, Utensils, TrendingUp, CheckSquare, MessageCircle } from "lucide-react"
+import { Flame, Dumbbell, Utensils, TrendingUp, CheckSquare } from "lucide-react"
 
 export function FitnessTracker() {
   const [activeTab, setActiveTab] = useState("calculator")
@@ -35,7 +34,7 @@ export function FitnessTracker() {
 
         <main className="container mx-auto px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto gap-2 bg-transparent p-0">
               <TabsTrigger
                 value="calculator"
                 className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -71,13 +70,6 @@ export function FitnessTracker() {
                 <CheckSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">Todos</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="chat"
-                className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">AI Chat</span>
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="calculator" className="mt-6">
@@ -94,9 +86,6 @@ export function FitnessTracker() {
             </TabsContent>
             <TabsContent value="todos" className="mt-6">
               <TodoManager onUpdate={collectStats} />
-            </TabsContent>
-            <TabsContent value="chat" className="mt-6 h-[600px]">
-              <AIChat />
             </TabsContent>
           </Tabs>
         </main>

@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAI } from '@/context/ai-context'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Loader2, Zap, TrendingDown, Dumbbell, Apple } from 'lucide-react'
+import { AlertCircle, Loader2, Zap, TrendingDown, Dumbbell, Apple, Send, MessageSquare } from 'lucide-react'
 
 interface AISidebarProps {
   userStats: {
@@ -20,12 +21,22 @@ interface AISidebarProps {
   }
 }
 
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export function AISidebar({ userStats }: AISidebarProps) {
   const { alerts, isAnalyzing, currentSuggestion, analyzeProgress, generateSuggestion, clearAlerts } = useAI()
   const [activeTab, setActiveTab] = useState('suggestions')
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null)
   const [analysisResult, setAnalysisResult] = useState('')
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-analyze on component mount and when user stats change
   useEffect(() => {
@@ -39,6 +50,55 @@ export function AISidebar({ userStats }: AISidebarProps) {
       generateSuggestion(userStats, alerts).finally(() => setIsGenerating(false))
     }
   }, [alerts, userStats, generateSuggestion])
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: chatInput,
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    setChatInput('')
+    setIsChatLoading(true)
+
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: chatInput,
+          history: chatMessages,
+          userStats,
+        }),
+      })
+
+      const data = await response.json()
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.response || 'Sorry, I could not generate a response.',
+      }
+      setChatMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('Chat error:', error)
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, there was an error processing your message. Please try again.',
+      }
+      setChatMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
 
   const handleAnalysis = async (type: string) => {
     setSelectedAnalysis(type)
@@ -91,17 +151,20 @@ export function AISidebar({ userStats }: AISidebarProps) {
   return (
     <div className="w-full max-w-md bg-white border-l border-gray-200 rounded-lg shadow-lg overflow-hidden">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-        <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200">
+        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200">
           <div className="flex items-center gap-2 mb-2">
-            <Zap className="w-5 h-5 text-green-600" />
+            <Zap className="w-5 h-5 text-blue-600" />
             <h2 className="font-bold text-lg text-gray-900">AI Coach</h2>
           </div>
-          <TabsList className="w-full grid grid-cols-2 bg-white border border-gray-200">
+          <TabsList className="w-full grid grid-cols-3 bg-white border border-gray-200">
             <TabsTrigger value="suggestions" className="text-xs">
-              Suggestions
+              Tips
             </TabsTrigger>
             <TabsTrigger value="analysis" className="text-xs">
-              Analysis
+              Analyze
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="text-xs">
+              Chat
             </TabsTrigger>
           </TabsList>
         </div>
@@ -132,16 +195,16 @@ export function AISidebar({ userStats }: AISidebarProps) {
           {/* AI Suggestion */}
           <div className="space-y-2 border-t pt-4">
             <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-green-600" />
+              <Zap className="w-4 h-4 text-blue-600" />
               Smart Suggestions
             </h3>
             {isGenerating ? (
-              <div className="flex items-center justify-center p-4 bg-green-50 rounded border border-green-200">
-                <Loader2 className="w-4 h-4 animate-spin text-green-600 mr-2" />
-                <span className="text-sm text-green-700">Generating suggestions...</span>
+              <div className="flex items-center justify-center p-4 bg-blue-50 rounded border border-blue-200">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600 mr-2" />
+                <span className="text-sm text-blue-700">Generating suggestions...</span>
               </div>
             ) : currentSuggestion ? (
-              <Card className="p-3 bg-green-50 border border-green-200 text-sm text-gray-800 leading-relaxed">
+              <Card className="p-3 bg-blue-50 border border-blue-200 text-sm text-gray-800 leading-relaxed">
                 {currentSuggestion}
               </Card>
             ) : (
@@ -191,30 +254,87 @@ export function AISidebar({ userStats }: AISidebarProps) {
           </div>
 
           {isGenerating ? (
-            <div className="flex items-center justify-center p-4 bg-gray-50 rounded border border-gray-200">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600 mr-2" />
-              <span className="text-sm text-gray-600">Analyzing...</span>
+            <div className="flex items-center justify-center p-4 bg-blue-50 rounded border border-blue-200">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600 mr-2" />
+              <span className="text-sm text-blue-600">Analyzing...</span>
             </div>
           ) : analysisResult ? (
-            <Card className="p-3 bg-gray-50 border border-gray-200 text-sm text-gray-800 leading-relaxed">
+            <Card className="p-3 bg-blue-50 border border-blue-200 text-sm text-gray-800 leading-relaxed">
               {analysisResult}
             </Card>
           ) : (
             <p className="text-sm text-gray-500">Select an analysis type to get detailed insights.</p>
           )}
         </TabsContent>
+
+        <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {chatMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                <MessageSquare className="w-8 h-8 text-gray-300 mb-2" />
+                <p className="text-sm text-gray-500">Start a conversation with your AI fitness coach!</p>
+              </div>
+            ) : (
+              chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-none'
+                        : 'bg-gray-200 text-gray-900 rounded-bl-none'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="border-t border-gray-200 p-3 bg-gray-50">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ask your coach..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                disabled={isChatLoading}
+                className="flex-1 text-xs"
+              />
+              <Button
+                size="sm"
+                onClick={handleSendMessage}
+                disabled={isChatLoading || !chatInput.trim()}
+                className="px-3"
+              >
+                {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
 
-      <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={clearAlerts}
-          className="w-full text-xs text-gray-600 hover:text-gray-900"
-        >
-          Clear Alerts
-        </Button>
-      </div>
+      {activeTab !== 'chat' && (
+        <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={clearAlerts}
+            className="w-full text-xs text-gray-600 hover:text-gray-900"
+          >
+            Clear Alerts
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
