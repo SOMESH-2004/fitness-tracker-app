@@ -6,9 +6,11 @@ import { CalorieCalculator } from "@/components/calorie-calculator"
 import { WorkoutTracker } from "@/components/workout-tracker"
 import { DietMonitor } from "@/components/diet-monitor"
 import { ProgressTracker } from "@/components/progress-tracker"
+import { TodoManager } from "@/components/todo-manager"
+import { AIChat } from "@/components/ai-chat"
 import { AISidebar } from "@/components/ai-sidebar"
 import { useUserStats } from "@/hooks/use-user-stats"
-import { Flame, Dumbbell, Utensils, TrendingUp } from "lucide-react"
+import { Flame, Dumbbell, Utensils, TrendingUp, CheckSquare, MessageCircle } from "lucide-react"
 
 export function FitnessTracker() {
   const [activeTab, setActiveTab] = useState("calculator")
@@ -33,38 +35,48 @@ export function FitnessTracker() {
 
         <main className="container mx-auto px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto gap-2 bg-transparent p-0">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
               <TabsTrigger
                 value="calculator"
                 className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Flame className="h-4 w-4" />
-                <span className="hidden sm:inline">Calorie Calculator</span>
-                <span className="sm:hidden">Calories</span>
+                <span className="hidden sm:inline">Calories</span>
               </TabsTrigger>
               <TabsTrigger
                 value="workouts"
                 className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Dumbbell className="h-4 w-4" />
-                <span className="hidden sm:inline">Workout Tracker</span>
-                <span className="sm:hidden">Workouts</span>
+                <span className="hidden sm:inline">Workouts</span>
               </TabsTrigger>
               <TabsTrigger
                 value="diet"
                 className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Utensils className="h-4 w-4" />
-                <span className="hidden sm:inline">Diet Monitor</span>
-                <span className="sm:hidden">Diet</span>
+                <span className="hidden sm:inline">Diet</span>
               </TabsTrigger>
               <TabsTrigger
                 value="progress"
                 className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">Progress Tracking</span>
-                <span className="sm:hidden">Progress</span>
+                <span className="hidden sm:inline">Progress</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="todos"
+                className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <CheckSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Todos</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="chat"
+                className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Chat</span>
               </TabsTrigger>
             </TabsList>
 
@@ -79,6 +91,12 @@ export function FitnessTracker() {
             </TabsContent>
             <TabsContent value="progress" className="mt-6">
               <ProgressTracker onUpdate={collectStats} />
+            </TabsContent>
+            <TabsContent value="todos" className="mt-6">
+              <TodoManager onUpdate={collectStats} />
+            </TabsContent>
+            <TabsContent value="chat" className="mt-6 h-[600px]">
+              <AIChat />
             </TabsContent>
           </Tabs>
         </main>
