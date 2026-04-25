@@ -23,7 +23,11 @@ interface DayWorkouts {
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-export function WorkoutTracker() {
+interface WorkoutTrackerProps {
+  onUpdate?: () => void
+}
+
+export function WorkoutTracker({ onUpdate }: WorkoutTrackerProps) {
   const [selectedDay, setSelectedDay] = useState("Monday")
   const [workouts, setWorkouts] = useState<DayWorkouts>({
     Monday: [],
@@ -52,6 +56,7 @@ export function WorkoutTracker() {
   const saveWorkouts = (data: DayWorkouts) => {
     setWorkouts(data)
     localStorage.setItem("workouts", JSON.stringify(data))
+    onUpdate?.()
   }
 
   const addWorkout = () => {

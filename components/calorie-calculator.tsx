@@ -26,7 +26,11 @@ const activityLevels = [
   { value: "extreme", label: "Extra active (very hard exercise)", multiplier: 1.9 },
 ]
 
-export function CalorieCalculator() {
+interface CalorieCalculatorProps {
+  onUpdate?: () => void
+}
+
+export function CalorieCalculator({ onUpdate }: CalorieCalculatorProps) {
   const [formData, setFormData] = useState<CalorieData>({
     age: "",
     gender: "male",
