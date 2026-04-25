@@ -154,7 +154,7 @@ export function AISidebar({ userStats }: AISidebarProps) {
         <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-5 h-5 text-blue-600" />
-            <h2 className="font-bold text-lg text-gray-900">AI Coach</h2>
+            <h2 className="font-bold text-lg text-gray-900">Fit Guru</h2>
           </div>
           <TabsList className="w-full grid grid-cols-3 bg-white border border-gray-200">
             <TabsTrigger value="suggestions" className="text-xs">
@@ -272,7 +272,7 @@ export function AISidebar({ userStats }: AISidebarProps) {
             {chatMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-8">
                 <MessageSquare className="w-8 h-8 text-gray-300 mb-2" />
-                <p className="text-sm text-gray-500">Start a conversation with your AI fitness coach!</p>
+                <p className="text-sm text-gray-500">Start a conversation with Fit Guru!</p>
               </div>
             ) : (
               chatMessages.map((msg) => (
@@ -298,7 +298,7 @@ export function AISidebar({ userStats }: AISidebarProps) {
           <div className="border-t border-gray-200 p-3 bg-gray-50">
             <div className="flex gap-2">
               <Input
-                placeholder="Ask your coach..."
+                placeholder="Ask Fit Guru..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyPress={(e) => {

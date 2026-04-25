@@ -1,23 +1,23 @@
 # AI Chat Integration with Sidebar
 
 ## Overview
-The AI Chat feature has been fully integrated into the AI Coach sidebar, making it accessible from anywhere in the app without taking up tab space in the main content area.
+The AI Chat feature has been fully integrated into the Fit Guru sidebar, making it accessible from anywhere in the app without taking up tab space in the main content area.
 
 ## Changes Made
 
-### 1. Enhanced AI Sidebar Component
+### 1. Enhanced Fit Guru Sidebar Component
 The `ai-sidebar.tsx` component now includes three tabs:
 - **Tips** - Real-time alerts and smart fitness suggestions
 - **Analyze** - Detailed analysis of progress trends, workouts, diet patterns, and goals
-- **Chat** - Interactive conversation with your AI fitness coach
+- **Chat** - Interactive conversation with Fit Guru
 
 ### 2. Chat Features in Sidebar
-- **Real-time Messaging**: Send messages and receive instant responses from the AI coach
+- **Real-time Messaging**: Send messages and receive instant responses from Fit Guru
 - **Conversation History**: Chat history is maintained during your session
-- **Smart Context**: The AI has access to your fitness data and stats
+- **Smart Context**: Fit Guru has access to your fitness data and stats
 - **User-Friendly Interface**: 
   - User messages appear in blue on the right
-  - AI responses appear in gray on the left
+  - Fit Guru responses appear in gray on the left
   - Auto-scrolling to latest messages
   - Press Enter to send (Shift+Enter for new line)
 
