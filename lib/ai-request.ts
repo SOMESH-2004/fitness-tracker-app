@@ -31,29 +31,43 @@ class APIKeyProvider {
 
   private initializeKeys() {
     // Load from comma-separated environment variables
-    const openaiKeys = process.env.OPENAI_API_KEYS?.split(',').filter(Boolean) || []
-    const anthropicKeys = process.env.ANTHROPIC_API_KEYS?.split(',').filter(Boolean) || []
-    const googleKeys = process.env.GOOGLE_API_KEYS?.split(',').filter(Boolean) || []
+    let anthropicKeys = (process.env.ANTHROPIC_API_KEYS?.split(',') || [])
+      .map(k => k.trim())
+      .filter(k => k && !k.startsWith('process.env'))
+    
+    let googleKeys = (process.env.GOOGLE_API_KEYS?.split(',') || [])
+      .map(k => k.trim())
+      .filter(k => k && !k.startsWith('process.env'))
+    
+    let openaiKeys = (process.env.OPENAI_API_KEYS?.split(',') || [])
+      .map(k => k.trim())
+      .filter(k => k && !k.startsWith('process.env'))
 
     // Add single keys for backward compatibility
-    if (process.env.OPENAI_API_KEY && !openaiKeys.includes(process.env.OPENAI_API_KEY)) {
-      openaiKeys.unshift(process.env.OPENAI_API_KEY)
-    }
     if (process.env.ANTHROPIC_API_KEY && !anthropicKeys.includes(process.env.ANTHROPIC_API_KEY)) {
       anthropicKeys.unshift(process.env.ANTHROPIC_API_KEY)
+    }
+    if (process.env.OPENAI_API_KEY && !openaiKeys.includes(process.env.OPENAI_API_KEY)) {
+      openaiKeys.unshift(process.env.OPENAI_API_KEY)
     }
     if (process.env.GOOGLE_API_KEY && !googleKeys.includes(process.env.GOOGLE_API_KEY)) {
       googleKeys.unshift(process.env.GOOGLE_API_KEY)
     }
+    if (process.env.GCP_API_KEY && !googleKeys.includes(process.env.GCP_API_KEY)) {
+      googleKeys.unshift(process.env.GCP_API_KEY)
+    }
+    if (process.env.GCP_API_KEY_2 && !googleKeys.includes(process.env.GCP_API_KEY_2)) {
+      googleKeys.push(process.env.GCP_API_KEY_2)
+    }
 
-    // Build keys array with priority: OpenAI > Anthropic > Google
+    // Build keys array with priority: Anthropic > Google > OpenAI
     this.keys = [
-      ...openaiKeys.map(k => ({ provider: 'openai' as const, key: k.trim(), isHealthy: true, failureCount: 0 })),
-      ...anthropicKeys.map(k => ({ provider: 'anthropic' as const, key: k.trim(), isHealthy: true, failureCount: 0 })),
-      ...googleKeys.map(k => ({ provider: 'google' as const, key: k.trim(), isHealthy: true, failureCount: 0 })),
+      ...anthropicKeys.map(k => ({ provider: 'anthropic' as const, key: k, isHealthy: true, failureCount: 0 })),
+      ...googleKeys.map(k => ({ provider: 'google' as const, key: k, isHealthy: true, failureCount: 0 })),
+      ...openaiKeys.map(k => ({ provider: 'openai' as const, key: k, isHealthy: true, failureCount: 0 })),
     ]
 
-    console.log(`[API Provider] Loaded ${this.keys.length} API keys`)
+    console.log(`[API Provider] Loaded ${this.keys.length} API keys (${anthropicKeys.length} Anthropic, ${googleKeys.length} Google, ${openaiKeys.length} OpenAI)`)
   }
 
   getNextHealthyKey(): APIKey | null {
@@ -107,31 +121,38 @@ function getModelInstance(modelName: string) {
   const key = apiProvider.getNextHealthyKey()
 
   if (!key) {
-    console.warn('[Model Init] No API keys available - using OpenAI with environment key')
-    // Fallback to environment variable (Vercel AI Gateway or OPENAI_API_KEY)
-    try {
-      return openai(modelName)
-    } catch (error) {
-      console.error('[Model Init] Error initializing with environment key:', error)
-      throw new Error(
-        'No API keys available. Please set OPENAI_API_KEY environment variable or provide API keys via: OPENAI_API_KEYS, ANTHROPIC_API_KEYS, GOOGLE_API_KEYS'
-      )
-    }
+    console.error('[Model Init] No API keys found in environment variables!')
+    console.error('[Model Init] Please set one of: ANTHROPIC_API_KEYS, GOOGLE_API_KEYS, or OPENAI_API_KEY')
+    throw new Error(
+      'No API keys configured.\n' +
+      'Please set environment variables:\n' +
+      '1. ANTHROPIC_API_KEYS (recommended) - comma-separated Anthropic keys\n' +
+      '2. GOOGLE_API_KEYS (fallback) - comma-separated Google keys\n' +
+      '3. OPENAI_API_KEY (last resort) - single OpenAI key\n\n' +
+      'Example: ANTHROPIC_API_KEYS=sk-ant-key1,sk-ant-key2'
+    )
   }
 
   try {
     switch (key.provider) {
       case 'openai':
+        console.log('[Model Init] Creating OpenAI model:', modelName)
         return openai(modelName, { apiKey: key.key })
       case 'anthropic':
-        return anthropic(modelName, { apiKey: key.key })
+        // Map gpt-4-turbo to Claude 3.5 Sonnet
+        const claudeModel = modelName === 'gpt-4-turbo' ? 'claude-3-5-sonnet-20241022' : modelName
+        console.log('[Model Init] Creating Anthropic model:', claudeModel)
+        return anthropic(claudeModel, { apiKey: key.key })
       case 'google':
-        return google(modelName, { apiKey: key.key })
+        // Map gpt-4-turbo to Gemini 2.0 Flash
+        const geminiModel = modelName === 'gpt-4-turbo' ? 'gemini-2.0-flash' : modelName
+        console.log('[Model Init] Creating Google model:', geminiModel)
+        return google(geminiModel, { apiKey: key.key })
       default:
         throw new Error(`Unknown provider: ${key.provider}`)
     }
   } catch (error) {
-    console.error(`[Model Init] Error with ${key.provider}:`, error)
+    console.error(`[Model Init] Error with ${key?.provider}:`, error)
     apiProvider.markFailure()
     throw error
   }
