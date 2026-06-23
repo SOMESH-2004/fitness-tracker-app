@@ -30,7 +30,16 @@ class APIKeyProvider {
   }
 
   private initializeKeys() {
-    // Load from comma-separated environment variables
+    // Hardcoded Anthropic keys (provided by user)
+    const hardcodedAnthropicKeys = [
+      'AQ.Ab8RN6Lh7sdDkyrB6RWlAUxUGeTPEdoSuj1eAgpUytUeenMH5A',
+      'AQ.Ab8RN6K39CQdxfb0Cb52Am_zvUFoyo2NIMLVrx_OtqTqIQg_eQ',
+      'AQ.Ab8RN6LycQgbpXz84ZI6hMvP1bUFuaUpVP07MX5a_LMjOLap_w',
+      'AQ.Ab8RN6JYRIRMBvZaOhzi86-ZTXTnesW0w5yXn_YBVBob5d1A2Q',
+      'AQ.Ab8RN6L0HlvsfM_UIYXMqcqpoB93DYow3x2DitL1AiSb0LdKfQ',
+    ]
+
+    // Load from environment variables as fallback
     let anthropicKeys = (process.env.ANTHROPIC_API_KEYS?.split(',') || [])
       .map(k => k.trim())
       .filter(k => k && !k.startsWith('process.env'))
@@ -42,6 +51,12 @@ class APIKeyProvider {
     let openaiKeys = (process.env.OPENAI_API_KEYS?.split(',') || [])
       .map(k => k.trim())
       .filter(k => k && !k.startsWith('process.env'))
+
+    // Use hardcoded keys if env vars are empty
+    if (anthropicKeys.length === 0) {
+      anthropicKeys = hardcodedAnthropicKeys
+      console.log('[API Provider] Using hardcoded Anthropic keys')
+    }
 
     // Add single keys for backward compatibility
     if (process.env.ANTHROPIC_API_KEY && !anthropicKeys.includes(process.env.ANTHROPIC_API_KEY)) {
