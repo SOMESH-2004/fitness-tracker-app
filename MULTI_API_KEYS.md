@@ -7,121 +7,117 @@ FitTrack now supports multiple API keys with automatic fallback. If one API prov
 ## Supported Providers
 
 1. **OpenAI** (gpt-4-turbo, gpt-4, gpt-3.5-turbo)
-2. **Groq** (Fast inference models)
-3. **Anthropic** (Claude models)
-4. **Google** (Gemini models)
+2. **Anthropic** (Claude models)
+3. **Google** (Gemini models)
+
+## Quick Start (Easiest Way)
+
+Add just ONE API key to Vercel project settings:
+
+**In Vercel Dashboard:**
+1. Go to Project Settings → Environment Variables
+2. Add: `OPENAI_API_KEY=sk-your-key-here`
+3. Deploy and it works!
 
 ## Environment Variables Setup
 
-Add your API keys to your `.env.local` or Vercel environment variables:
-
-### Single Primary Key (Backward Compatible)
+### Option 1: Single Key (Recommended)
 ```
 OPENAI_API_KEY=sk-...
 ```
 
-### Multiple OpenAI Keys (Comma-Separated)
+### Option 2: Multiple Keys of Same Provider (Comma-Separated)
 ```
 OPENAI_API_KEYS=sk-key1,sk-key2,sk-key3
 ```
 
-### Multiple Keys Across Providers
+### Option 3: Multiple Keys Across Providers (Maximum Reliability)
 ```
 OPENAI_API_KEYS=sk-openai1,sk-openai2
-GROQ_API_KEYS=gsk-groq1,gsk-groq2
-ANTHROPIC_API_KEYS=sk-ant1,sk-ant2
+ANTHROPIC_API_KEYS=sk-ant-key1,sk-ant-key2
 GOOGLE_API_KEYS=google-key1,google-key2
 ```
 
 ## How It Works
 
-1. **Initialization**: System loads all provided API keys on startup
+1. **Initialization**: System loads all configured API keys
 2. **Request**: Attempts to use the current healthy API key
-3. **On Success**: Marks key as healthy and continues
+3. **On Success**: Marks key as healthy, continues
 4. **On Failure**: 
-   - Reports failure to the key manager
-   - After 3 consecutive failures, marks key as unhealthy
+   - After 3 failures, marks key as unhealthy
    - Automatically switches to next available key
-   - Retries the request (up to 3 times total)
-5. **Recovery**: Keys are reset if all become unhealthy
+   - Retries request (up to 3 attempts)
+5. **Recovery**: Keys reset if all become unhealthy
 
-## Key Status Tracking
+## Key Priority Order
 
-Each API key tracks:
-- **Provider**: OpenAI, Groq, Anthropic, or Google
-- **Healthy Status**: Whether the key is currently usable
-- **Failure Count**: Number of consecutive failures
-- **Success Count**: Total successful requests
-- **Last Checked**: When the key was last used
+When multiple providers configured:
+1. OpenAI (tried first)
+2. Anthropic (fallback)
+3. Google (last resort)
 
 ## Retry Strategy
 
 - **Max Retries**: 3 attempts per request
-- **Backoff**: Exponential backoff between retries (1s, 2s, 4s max)
+- **Backoff**: 1 second, then 2 seconds between retries
 - **Threshold**: Keys marked unhealthy after 3 consecutive failures
-- **Recovery**: Automatic reset if all keys become unhealthy
+- **Recovery**: Automatic reset if all keys fail
 
-## Error Handling
+## Error Responses
 
-If all API keys fail:
-- System returns error with full API status information
-- Client receives detailed error message and key health status
-- All error responses include `apiStatus` object showing key health
-
-### Example Error Response
+When errors occur, you receive:
 ```json
 {
-  "error": "Failed to execute AI request after 3 attempts",
+  "error": "Failed to generate text after multiple attempts",
   "apiStatus": [
-    {
-      "provider": "openai",
-      "isHealthy": false,
-      "failureCount": 3,
-      "successCount": 2,
-      "lastChecked": "2026-06-23T05:28:47.000Z",
-      "masked": "sk-proj..."
-    }
+    { "provider": "openai", "isHealthy": true, "failureCount": 0 },
+    { "provider": "anthropic", "isHealthy": false, "failureCount": 3 }
   ]
 }
 ```
 
-## Monitoring
+This helps debug which keys are working.
 
-Check API health status at any time:
-- Each API route returns `apiStatus` in error responses
-- Frontend can display which providers are working
-- Logs show fallback attempts and provider switches
+## Getting API Keys
+
+- **OpenAI**: https://platform.openai.com/api-keys
+- **Anthropic**: https://console.anthropic.com/
+- **Google**: https://aistudio.google.com/app/apikey
+
+## Setup Steps
+
+1. Get an API key from OpenAI, Anthropic, or Google
+2. In Vercel Dashboard: Settings → Environment Variables
+3. Add your key(s) using one of the formats above
+4. Deploy
+5. Your AI features now work with automatic fallback!
+
+## Testing Multiple Keys
+
+To test fallback with multiple keys:
+1. Add a valid key and an invalid key: `OPENAI_API_KEYS=sk-invalid,sk-valid`
+2. Make a request - system auto-switches to valid key
+3. Request succeeds!
 
 ## Best Practices
 
-1. **Provide Multiple Keys**: Set at least 2-3 keys per provider
-2. **Different Providers**: Combine OpenAI + Groq for maximum reliability
-3. **Monitor Quota**: Check your provider dashboards for rate limits
-4. **Rotate Keys**: Periodically refresh API keys in production
-5. **Error Alerts**: Set up notifications when all keys fail
+1. **Start with One**: Begin with single `OPENAI_API_KEY`
+2. **Add More Keys**: If hitting rate limits, add comma-separated keys
+3. **Mix Providers**: Use different providers for reliability
+4. **Monitor Usage**: Check provider dashboards for quotas
+5. **Rotate Keys**: Update keys periodically in production
 
-## Example Vercel Environment Variables
+## Troubleshooting
 
-Go to your Vercel Project → Settings → Environment Variables and add:
+**Error: "No API keys available"**
+- Add at least one key: `OPENAI_API_KEY=sk-...`
 
-```
-OPENAI_API_KEYS=sk-key1,sk-key2,sk-key3
-GROQ_API_KEYS=gsk-groq1,gsk-groq2
-```
+**All keys failing?**
+- Verify keys are valid on provider website
+- Check for rate limiting in provider dashboard
+- Ensure account has API credits
 
-The system will automatically:
-- Try OpenAI keys first (3 total)
-- Fall back to Groq keys if OpenAI fails
-- Switch between providers automatically
-- Maintain health status for each key
-
-## Testing
-
-To test the fallback system:
-
-1. Set invalid primary key + valid secondary key
-2. Make a request
-3. System will fail on first key, switch to second
-4. Request succeeds with second key
-
-Frontend will show real-time status of which provider is active.
+**Still getting errors?**
+- Check Vercel Environment Variables are saved
+- Redeploy after adding variables
+- Check server logs for detailed error messages
