@@ -78,7 +78,7 @@ Choose from 4 analysis types in the sidebar:
 - **`/context/ai-context.tsx`**: React Context for managing AI state globally
 
 ### Data Flow
-```
+\`\`\`
 User Updates Data (meal, workout, weight)
   ↓
 Component calls onUpdate() callback
@@ -92,7 +92,7 @@ Real-time alerts generated
 generateSuggestion() calls API for streaming AI response
   ↓
 AISidebar displays alerts and suggestions
-```
+\`\`\`
 
 ## Alert System
 
@@ -110,16 +110,16 @@ AISidebar displays alerts and suggestions
 
 ### Modifying Alert Thresholds
 Edit `/lib/ai-analysis.ts` functions:
-```typescript
+\`\`\`typescript
 // Example: Change weight gain alert threshold
 if (weeklyChange > 0.5) trend = 'gaining'  // Change 0.5 to different value
-```
+\`\`\`
 
 ### Changing AI Model
 Edit API routes to use different OpenAI models:
-```typescript
+\`\`\`typescript
 model: openai('gpt-4-turbo')  // Change to 'gpt-3.5-turbo', 'gpt-4', etc.
-```
+\`\`\`
 
 ### Customizing Prompts
 Modify system and user prompts in:

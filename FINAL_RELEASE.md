@@ -63,7 +63,7 @@ Accessible from a persistent sidebar with three powerful tabs:
 
 ## File Structure
 
-```
+\`\`\`
 /app
   /api/ai              # AI API endpoints
   /layout.tsx          # Root layout with AI Provider
@@ -88,7 +88,7 @@ Accessible from a persistent sidebar with three powerful tabs:
 /lib
   /ai-analysis.ts      # Analysis algorithms
   /todo-utils.ts       # Todo utilities
-```
+\`\`\`
 
 ---
 
@@ -109,7 +109,7 @@ Accessible from a persistent sidebar with three powerful tabs:
 3. Ask Fit Guru for personalized coaching
 
 ### For Developers
-```bash
+\`\`\`bash
 # Install
 npm install
 
@@ -121,7 +121,7 @@ npm run build
 
 # Deploy to Vercel
 vercel deploy --prod
-```
+\`\`\`
 
 ---
 

@@ -1,5 +1,4 @@
-import { streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { streamTextWithFallback, getAPIStatus } from '@/lib/ai-request'
 
 export async function POST(req: Request) {
   const { messages, userMessage } = await req.json()
@@ -17,9 +16,8 @@ export async function POST(req: Request) {
   ]
 
   try {
-    const result = streamText({
-      model: openai('gpt-4-turbo'),
-      system: `You are an advanced AI Fitness Coach. You have access to the user's fitness data and can:
+    const result = await streamTextWithFallback({
+      system: `You are Fit Guru, an advanced AI Fitness Coach. You have access to the user's fitness data and can:
 1. Provide personalized workout recommendations based on their current routine
 2. Give meal planning advice based on their diet history
 3. Analyze their progress and suggest improvements
@@ -31,6 +29,7 @@ Be encouraging, data-driven, and always consider the user's current fitness leve
 Keep responses concise but helpful.`,
       messages: allMessages,
       maxTokens: 1024,
+      model: 'gpt-4-turbo',
     })
 
     // Convert to SSE stream
@@ -44,6 +43,7 @@ Keep responses concise but helpful.`,
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         } catch (error) {
+          console.error('[Chat Stream] Error:', error)
           controller.error(error)
         } finally {
           controller.close()
@@ -59,9 +59,13 @@ Keep responses concise but helpful.`,
       },
     })
   } catch (error) {
-    console.error('AI chat error:', error)
+    console.error('[Chat API] Error:', error)
+    const status = getAPIStatus()
     return Response.json(
-      { error: 'Failed to process chat message' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to process chat message',
+        apiStatus: status
+      },
       { status: 500 }
     )
   }

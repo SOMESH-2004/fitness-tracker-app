@@ -108,9 +108,9 @@ The AI operates as an advanced Fitness Coach with capabilities to:
 - New icons: `CheckSquare` for todos, `MessageCircle` for chat
 
 ### Tab Navigation
-```
+\`\`\`
 Calories | Workouts | Diet | Progress | Todos | AI Chat
-```
+\`\`\`
 
 ---
 
@@ -191,20 +191,20 @@ Calories | Workouts | Diet | Progress | Todos | AI Chat
 ## Color Reference
 
 ### Blue Theme - Light Mode
-```
+\`\`\`
 --primary: oklch(0.55 0.25 250)      # Deep blue
 --accent: oklch(0.75 0.15 260)       # Light blue accent
 --background: oklch(0.98 0.005 250)  # Off-white with blue tint
 --border: oklch(0.9 0.01 250)        # Light blue border
-```
+\`\`\`
 
 ### Blue Theme - Dark Mode
-```
+\`\`\`
 --primary: oklch(0.6 0.25 250)       # Bright blue
 --accent: oklch(0.65 0.18 260)       # Accent blue
 --background: oklch(0.15 0.02 250)   # Dark blue background
 --border: oklch(0.28 0.02 250)       # Dark blue border
-```
+\`\`\`
 
 ---
 

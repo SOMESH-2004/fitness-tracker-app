@@ -1,13 +1,12 @@
 'use server'
 
-import { generateText } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { generateTextWithFallback, getAPIStatus } from '@/lib/ai-request'
 
 export async function POST(req: Request) {
   try {
     const { userData, analysisType } = await req.json()
 
-    const systemPrompt = `You are a professional fitness and nutrition coach. Analyze the user's fitness data and provide specific, actionable advice. Be encouraging but honest. Keep responses concise (2-3 paragraphs max).`
+    const systemPrompt = `You are Fit Guru, a professional fitness and nutrition coach. Analyze the user's fitness data and provide specific, actionable advice. Be encouraging but honest. Keep responses concise (2-3 paragraphs max).`
 
     let userPrompt = ''
 
@@ -69,12 +68,12 @@ Suggest a balanced 7-day meal and workout plan with specific exercises and meals
         userPrompt = `Provide general fitness advice based on this data: ${JSON.stringify(userData)}`
     }
 
-    const response = await generateText({
-      model: openai('gpt-4-turbo'),
+    const response = await generateTextWithFallback({
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
       maxTokens: 500,
+      model: 'gpt-4-turbo',
     })
 
     return Response.json({
@@ -83,11 +82,13 @@ Suggest a balanced 7-day meal and workout plan with specific exercises and meals
       type: analysisType,
     })
   } catch (error) {
-    console.error('AI Analysis Error:', error)
+    console.error('[Analyze API] Error:', error)
+    const status = getAPIStatus()
     return Response.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to analyze data',
+        apiStatus: status
       },
       { status: 500 }
     )

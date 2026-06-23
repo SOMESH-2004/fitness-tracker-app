@@ -53,7 +53,7 @@
 
 ## 📁 New Files Created
 
-```
+\`\`\`
 /app/api/ai/
 ├── analyze/route.ts          (AI analysis API)
 └── suggestions/route.ts      (Streaming suggestions API)
@@ -73,11 +73,11 @@
 /
 ├── AI_ASSISTANT_GUIDE.md     (User guide)
 └── IMPLEMENTATION_SUMMARY.md (This file)
-```
+\`\`\`
 
 ## 🔄 Modified Files
 
-```
+\`\`\`
 /components/
 ├── fitness-tracker.tsx       (Added sidebar, updated layout)
 ├── calorie-calculator.tsx    (Added onUpdate callback)
@@ -87,7 +87,7 @@
 
 /app/
 └── layout.tsx                (Added AIProvider wrapper)
-```
+\`\`\`
 
 ## 🎯 Features Implemented
 
@@ -135,7 +135,7 @@ Go to project settings → Vars → Add:
 
 ## 📊 Data Flow
 
-```
+\`\`\`
 User Action (add meal/workout/weight)
     ↓
 Component saves to localStorage
@@ -153,7 +153,7 @@ useAI.analyzeProgress() runs (instant alerts)
 useAI.generateSuggestion() calls API (streaming)
     ↓
 UI updates with alerts and suggestions
-```
+\`\`\`
 
 ## 🔧 Technical Stack
 
